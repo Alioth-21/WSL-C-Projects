@@ -6,12 +6,12 @@
 #define MAXSIZE 5
 #define NotFound -1
 
-typedef int ElemType;
+typedef int DataType;
 typedef struct Node* Ptr;
 typedef struct LinkList* PtrL;
 
 struct Node{
-    ElemType Data;
+    DataType Data;
     Ptr Next;
 };
 
@@ -27,11 +27,11 @@ bool IsFull(PtrL L);
 int GetLength(PtrL L);
 bool CheckIndex(PtrL L, int Index);
 bool CheckInsertIndex(PtrL L, int Index);
-ElemType GetElem(Ptr P);
+DataType GetData(Ptr P);
 Ptr GetNode(PtrL L, int Index);
 Ptr GetPrevNode(PtrL L, int index);//get prev node address
-bool SetData(Ptr P, ElemType Data);
-Ptr CreateNode(ElemType Data);
+bool SetData(Ptr P, DataType Data);
+Ptr CreateNode(DataType Data);
 bool DeleteAtIndex(PtrL L, int Index);
 bool InsertHead(PtrL L, Ptr P);
 bool InsertTail(PtrL L, Ptr P);
@@ -40,8 +40,8 @@ bool InsertAtIndex(PtrL L, int Index, Ptr P);
 //operations
 void PrintList(PtrL L);
 bool Insert(PtrL L);
-int FindByElem(PtrL L);
-ElemType FindByIndex(PtrL L);
+int FindByData(PtrL L);
+DataType FindByIndex(PtrL L);
 bool UpdeteNode(PtrL L);
 bool DeleteNode(PtrL L);
 void ClearList(PtrL L);
@@ -51,13 +51,13 @@ int main(){
     int chioce = -1;
     PtrL L = InitList();
     while (chioce){
-        printf("1. PrintList\n2. ListLength\n3. Insert\n4. FindByElem\n5. FindByIndex\n6. Update\n7. Delete\n8. ClearList\n0. Exit\n");
+        printf("1. PrintList\n2. ListLength\n3. Insert\n4. FindByData\n5. FindByIndex\n6. Update\n7. Delete\n8. ClearList\n0. Exit\n");
         scanf("%d", &chioce);
         switch (chioce){
             case 1: PrintList(L); break;
             case 2: printf("Length:%d\n",GetLength(L)); break;
             case 3: Insert(L); break;
-            case 4: FindByElem(L); break;
+            case 4: FindByData(L); break;
             case 5: FindByIndex(L); break;
             case 6: UpdeteNode(L); break;
             case 7: DeleteNode(L); break;
@@ -91,7 +91,7 @@ bool CheckIndex(PtrL L, int Index){
 bool CheckInsertIndex(PtrL L, int Index){
     return Index >= 0 && Index <= L->Length;
 }
-ElemType GetElem(Ptr P){
+DataType GetData(Ptr P){
     if(P == NULL){
         printf("Node is NULL!\n");
         return NotFound;
@@ -114,14 +114,14 @@ Ptr GetPrevNode(PtrL L, int index){//get prev node address
     }
     return GetNode(L, index - 1);
 }
-bool SetData(Ptr P, ElemType Data){
+bool SetData(Ptr P, DataType Data){
     if(P == NULL){
         return false;
     }
     P->Data = Data;
     return true;
 }
-Ptr CreateNode(ElemType Data){
+Ptr CreateNode(DataType Data){
     Ptr p = (Ptr)malloc(sizeof(struct Node));
     if (p==NULL) {
         printf("Memory allocation failed!\n");
@@ -223,7 +223,7 @@ bool Insert(PtrL L){
     }
 
     int Index;
-    ElemType Data;
+    DataType Data;
     printf("Enter the index to insert: ");
     scanf("%d", &Index);
     printf("Enter the element to insert: ");
@@ -249,20 +249,20 @@ bool Insert(PtrL L){
         return InsertAtIndex(L, Index, p);
     }
 }
-int FindByElem(PtrL L){
-    ElemType Data;
+int FindByData(PtrL L){
+    DataType Data;
     printf("Enter the element to find: ");
     scanf("%d", &Data);
     for(int i = 0; i < L->Length; i++){
-        if(GetElem(GetNode(L, i)) == Data){
-            printf("Element %d found at index %d\n", Data, i);
+        if(GetData(GetNode(L, i)) == Data){
+            printf("Dataent %d found at index %d\n", Data, i);
             return i;
         }
     }
-    printf("Element %d not found!\n", Data);
+    printf("Dataent %d not found!\n", Data);
     return NotFound;
 }
-ElemType FindByIndex(PtrL L){
+DataType FindByIndex(PtrL L){
     int Index;
     printf("Enter the index to find: ");
     scanf("%d", &Index);
@@ -270,13 +270,13 @@ ElemType FindByIndex(PtrL L){
         printf("Invalid index!\n");
         return NotFound;
     }
-    ElemType Data = GetElem(GetNode(L, Index));
-    printf("Element at index %d is %d\n", Index, Data);
+    DataType Data = GetData(GetNode(L, Index));
+    printf("Dataent at index %d is %d\n", Index, Data);
     return Data;
 }
 bool UpdeteNode(PtrL L){
     int Index;
-    ElemType Data;
+    DataType Data;
     printf("Enter the index to update: ");
     scanf("%d", &Index);
     printf("Enter the new element: ");
