@@ -242,7 +242,7 @@ bool InsertTail(PtrL L, Ptr Np){
     return true;
 }
 bool InsertAt(PtrL L, Ptr Np, int Index){
-    if(IsFull(L) || Np==NULL || Index<=0 || Index>L->Length ){
+    if(IsFull(L) || Np==NULL || Index<1 || Index>L->Length-1 ){
         //insert in the middle, not at head or tail
         return false;
     }
