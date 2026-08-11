@@ -1,5 +1,5 @@
-// 1-4-1 SeqQueue.c
-// Cricular Queue using Array
+// 1-4-1 CricularQueue.c
+// Malloc
 /*
 Queue Pointer setting：
     Front： point to the first element
@@ -17,7 +17,7 @@ typedef int DataType;
 typedef struct{
     DataType Data[MAXSIZE];
     int Front, Rear;
-}SeqQueue, *PtrQ;
+}Queue, *PtrQ;
 
 void InitQueue(PtrQ Q);
 void PrintQueue(PtrQ Q);
@@ -32,7 +32,7 @@ void ClearQueue(PtrQ Q);
 
 
 int main(){
-    SeqQueue Q;
+    Queue Q;
     InitQueue(&Q);
     DataType data;
     int choice = -1;

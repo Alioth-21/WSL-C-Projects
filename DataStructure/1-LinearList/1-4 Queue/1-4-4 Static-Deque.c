@@ -1,50 +1,32 @@
-// 1-4-3 Deque.c
-// Double-ended Queue in C
-// Dynamic Array Implementation
+// 1-4-4 Static-Deque.c
+// Static Deque By Cricular Sequential Storage
+// No Length and Capacity
+// set a empty space for Rear, to distinguish between full and empty
 
-/*
-Enqueue:
-    Front: (Front - 1 + Capacity) % Capacity
-    Rear: (Rear + 1) % Capacity
-Dequeue:
-    Front: (Front + 1) % Capacity
-    Rear: (Rear - 1 + Capacity) % Capacity
-
-*/
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
-#define MAXSIZE 10
-#define SIZE 5
+#define MAXSIZE 5
 typedef int DataType;
-typedef DataType* Ptr;
 typedef struct{
-    Ptr Data;
+    DataType Data[MAXSIZE];
     int Front, Rear;
-    int Length;
-    int Capacity;
 }Deque, *PtrD;
 
-/// @declarations
-PtrD InitDeque();
-bool GetSpace(PtrD D, int size);
+void InitDeque(PtrD D);
+void PrintDeque(PtrD D);
 bool EnQueueFront(PtrD D, DataType data);
 bool EnQueueRear(PtrD D, DataType data);
 bool DeQueueFront(PtrD D, DataType* data);
 bool DeQueueRear(PtrD D, DataType* data);
-void PrintDeque(PtrD D);
 int GetLength(PtrD D);
 void ClearDeque(PtrD D);
 bool IsEmpty(PtrD D);
 bool IsFull(PtrD D);
 
 int main(){
-    PtrD D = InitDeque();
-    if(D == NULL){
-        printf("Memory allocation failed!\n");
-        return -1;
-    }
-    
+    Deque deque;
+    PtrD D = &deque;
+    InitDeque(D);
     DataType data;
     int choice = -1;
     while (choice)  {
@@ -108,54 +90,29 @@ int main(){
     return 0;
 }
 
-
-PtrD InitDeque(){
-    PtrD D = (PtrD)malloc(sizeof(Deque));
-    if(D == NULL){
-        return NULL;
-    }
-    D->Data = NULL;
+void InitDeque(PtrD D){
     D->Front = 0;
     D->Rear = 0;
-    D->Length = 0;
-    D->Capacity = SIZE;
-    if(! GetSpace(D, D->Capacity) ){
-        printf("Memory allocation failed!\n");
-        free(D);
-        return NULL;
-    }
-    return D;
 }
-bool GetSpace(PtrD D, int size){
-    Ptr p = (Ptr)malloc(size * sizeof(DataType));
-    if(p == NULL){
-        return false;
+void PrintDeque(PtrD D){
+    if(IsEmpty(D)){
+        printf("Deque is empty\n");
+        return;
     }
-    // Copy Old data to new space
     int pos = D->Front;
-    for(int i=0; i<D->Length; i++){
-        p[i] = D->Data[pos];
-        pos = (pos + 1) % D->Capacity;
+    for(int i=0; i<GetLength(D); i++){
+        printf("%d ", D->Data[pos]);
+        pos = (pos + 1) % MAXSIZE;
     }
-    // set queue new space
-    if(D->Data!=NULL) free(D->Data);
-    D->Data = p;
-    D->Front = 0;
-    D->Rear = D->Length;
-    D->Capacity = size;     // capacity changes, Length not change 
-    return true;
+    printf("\n");
 }
 bool EnQueueFront(PtrD D, DataType data){
     if(IsFull(D)){
         printf("Deque is full\n");
         return false;
     }
-    else if(D->Length==D->Capacity && D->Length<MAXSIZE && GetSpace(D, D->Capacity + SIZE)){
-        printf("Get More Space\n");
-    }
-    D->Front = (D->Front - 1 + D->Capacity) % D->Capacity;
+    D->Front = (D->Front - 1 + MAXSIZE) % MAXSIZE;
     D->Data[D->Front] = data;
-    D->Length++;
     return true;
 }
 bool EnQueueRear(PtrD D, DataType data){
@@ -163,12 +120,8 @@ bool EnQueueRear(PtrD D, DataType data){
         printf("Deque is full\n");
         return false;
     }
-    else if(D->Length==D->Capacity && D->Length<MAXSIZE && GetSpace(D, D->Capacity + SIZE)){
-        printf("Get More Space\n");
-    }
     D->Data[D->Rear] = data;
-    D->Rear = (D->Rear + 1) % D->Capacity;
-    D->Length++;
+    D->Rear = (D->Rear + 1) % MAXSIZE;
     return true;
 }
 bool DeQueueFront(PtrD D, DataType* data){
@@ -177,8 +130,7 @@ bool DeQueueFront(PtrD D, DataType* data){
         return false;
     }
     *data = D->Data[D->Front];
-    D->Front = (D->Front + 1) % D->Capacity;
-    D->Length--;
+    D->Front = (D->Front + 1) % MAXSIZE;
     return true;
 }
 bool DeQueueRear(PtrD D, DataType* data){
@@ -186,34 +138,23 @@ bool DeQueueRear(PtrD D, DataType* data){
         printf("Deque is empty\n");
         return false;
     }
-    D->Rear = (D->Rear - 1 + D->Capacity) % D->Capacity;
+    D->Rear = (D->Rear - 1 + MAXSIZE) % MAXSIZE;
     *data = D->Data[D->Rear];
-    D->Length--;
     return true;
 }
-void PrintDeque(PtrD D){
-    if(IsEmpty(D)){
-        printf("Deque is empty\n");
-        return;
-    }
-    int i = D->Front;
-    for(int j=0; j<D->Length; j++){
-        printf("%d ", D->Data[i]);
-        i = (i + 1) % D->Capacity;
-    }
-    printf("\n");
-}
 int GetLength(PtrD D){
-    return D->Length;
+    return (D->Rear - D->Front + MAXSIZE) % MAXSIZE;
 }
 void ClearDeque(PtrD D){
     D->Front = 0;
     D->Rear = 0;
-    D->Length = 0;
 }
 bool IsEmpty(PtrD D){
-    return D->Length == 0;  // D->Front == D->Rear
+    return (D->Front == D->Rear);
 }
 bool IsFull(PtrD D){
-    return D->Length == MAXSIZE;
+    return ((D->Rear + 1) % MAXSIZE == D->Front);
 }
+
+
+
