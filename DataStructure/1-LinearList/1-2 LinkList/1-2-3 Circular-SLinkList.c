@@ -1,5 +1,5 @@
-// 1-2-4 CD-LinkList
-// Circular Doubly Linked List in C
+// 1-2-3 Circular-SLinkList.c
+// Circular Singly Linked List in C
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,19 +8,19 @@
 
 typedef int DataType;
 typedef struct Node* Ptr;
-typedef struct CDLinkList* PtrL;
+typedef struct CSLinkList* PtrL;
 
 struct Node{
-    Ptr Prev, Next;
     DataType Data;
+    Ptr Next;
 };
 
-struct CDLinkList{
+struct CSLinkList{
     Ptr Head, Tail;
     int Length;
 };
 
-//
+// Function
 PtrL InitList();
 void PrintList(PtrL L);
 bool InsertNode(PtrL L);
@@ -35,24 +35,19 @@ bool IsEmpty(PtrL L);
 bool IsFull(PtrL L);
 int GetLength(PtrL L);
 Ptr GetNode(PtrL L, int Index);
-DataType GetData(Ptr Np);
+DataType GetData(Ptr P);
 bool SetData(Ptr p, DataType Data);
 Ptr CreateNode(DataType Data);
-bool InsertHead(PtrL L, Ptr Np);
-bool InsertTail(PtrL L, Ptr Np);
-bool InsertAt(PtrL L, Ptr Np, int Index);
+bool InsertHead(PtrL L, Ptr P);
+bool InsertTail(PtrL L, Ptr P);
+bool InsertAt(PtrL L, Ptr P, int Index);
 bool DeleteHead(PtrL L);
 bool DeleteTail(PtrL L);
 bool DeleteAt(PtrL L, int Index);
 
-
 int main() {
     int choice = -1;
     PtrL L = InitList();
-    if(L==NULL) {
-        printf("Memory allocation failed!\n");
-        return -1;
-    }
     while (choice)  {
         printf("1. PrintList\n");
         printf("2. Length\n");
@@ -80,7 +75,7 @@ int main() {
 }
 
 PtrL InitList(){
-    PtrL L = (PtrL)malloc(sizeof(struct CDLinkList));
+    PtrL L = (PtrL)malloc(sizeof(struct CSLinkList));
     if(L == NULL){
         return NULL;
     }
@@ -92,7 +87,7 @@ PtrL InitList(){
 void PrintList(PtrL L){
     Ptr p = L->Head;
     for(int i = 0; i < L->Length; i++){
-        printf("%d ", GetData(p));
+        printf("%d ", p->Data);
         p = p->Next;
     }
     printf("\n");
@@ -104,19 +99,15 @@ bool InsertNode(PtrL L){
     scanf("%d", &index);
     printf("Enter the element to insert: ");
     scanf("%d", &data);
-    Ptr np = CreateNode(data);
-    if(np == NULL){
-        printf("Memory allocation failed!\n");
-        return false;
-    }
-    else if(index == 0){
-        return InsertHead(L, np);
+    Ptr p = CreateNode(data);
+    if(index == 0){
+        return InsertHead(L, p);
     }
     else if(index == L->Length){
-        return InsertTail(L, np);
+        return InsertTail(L, p);
     }
     else{
-        return InsertAt(L, np, index);
+        return InsertAt(L, p, index);
     }
 }
 bool FindNode(PtrL L){
@@ -124,11 +115,11 @@ bool FindNode(PtrL L){
     printf("Enter the index to find: ");
     scanf("%d", &index);
     Ptr p = GetNode(L, index);
-    if(p == NULL){
+    if( index<0 || index>=L->Length || (p == NULL)){
         printf("Invalid index!\n");
         return false;
     }
-    printf("Element at index %d: %d\n", index, GetData(p));
+    printf("Element at index %d is: %d\n", index, p->Data);
     return true;
 }
 bool UpdateNode(PtrL L){
@@ -139,7 +130,7 @@ bool UpdateNode(PtrL L){
     printf("Enter the new element: ");
     scanf("%d", &data);
     Ptr p = GetNode(L, index);
-    if(p == NULL){
+    if( index<0 || index>=L->Length || (p == NULL)){
         printf("Invalid index!\n");
         return false;
     }
@@ -160,7 +151,7 @@ bool DeleteNode(PtrL L){
     }
 }
 void ClearList(PtrL L){
-    while (IsEmpty(L) == false) {
+    while (L!=NULL && !IsEmpty(L)){
         DeleteHead(L);
     }
 }
@@ -171,10 +162,10 @@ void DestroyList(PtrL L){
 
 //
 bool IsEmpty(PtrL L){
-    return (L->Length == 0);
+    return L->Length == 0;
 }
 bool IsFull(PtrL L){
-    return (L->Length == MAXSIZE);
+    return L->Length == MAXSIZE;
 }
 int GetLength(PtrL L){
     return L->Length;
@@ -189,8 +180,8 @@ Ptr GetNode(PtrL L, int Index){
     }
     return p;
 }
-DataType GetData(Ptr Np){
-    return Np->Data;
+DataType GetData(Ptr P){
+    return P->Data;
 }
 bool SetData(Ptr p, DataType Data){
     if(p == NULL){
@@ -201,56 +192,47 @@ bool SetData(Ptr p, DataType Data){
 }
 Ptr CreateNode(DataType Data){
     Ptr p = (Ptr)malloc(sizeof(struct Node));
-    if (p==NULL) {
+    if(p == NULL){
         return NULL;
     }
     p->Data = Data;
     p->Next = NULL;
-    p->Prev = NULL;
     return p;
 }
-bool InsertHead(PtrL L, Ptr Np){
-    if(IsFull(L) || Np == NULL) {
+bool InsertHead(PtrL L, Ptr P){
+    if (IsFull(L) || P == NULL) {
         return false;
     }
-    if(IsEmpty(L)){
-        L->Head = Np;
-        L->Tail = Np;
-        Np->Next = Np; // Point to itself
-        Np->Prev = Np; // Point to itself
-    }
-    else{
-        Np->Next = L->Head;
-        Np->Prev = L->Tail;
-        L->Head->Prev = Np;
-        L->Tail->Next = Np;
-        L->Head = Np; // Update head
+    if(IsEmpty(L)) {
+        L->Head = P;
+        L->Tail = P;
+        P->Next = P; // Point to itself
+    } 
+    else {
+        P->Next = L->Head;
+        L->Tail->Next = P; // Tail points to new head
+        L->Head = P; // Update head
     }
     L->Length++;
     return true;
 }
-bool InsertTail(PtrL L, Ptr Np){
-    if(IsFull(L) || Np == NULL) {
+bool InsertTail(PtrL L, Ptr P){
+    if (IsFull(L) || P == NULL) {
         return false;
     }
-    Np->Next = L->Head;
-    Np->Prev = L->Tail;
-    L->Tail->Next = Np;
-    L->Head->Prev = Np;
-    L->Tail = Np; // Update tail
+    P->Next = L->Head;
+    L->Tail->Next = P;
+    L->Tail = P;
     L->Length++;
     return true;
 }
-bool InsertAt(PtrL L, Ptr Np, int Index){
-    if(IsFull(L) || Np==NULL || Index<1 || Index>L->Length-1 ){
-        //insert in the middle, not at head or tail
+bool InsertAt(PtrL L, Ptr P, int Index){
+    if(IsFull(L) || P==NULL || Index<=0 || Index>=L->Length ){
         return false;
     }
-    Ptr p = GetNode(L, Index);
-    Np->Prev = p->Prev;
-    Np->Next = p;
-    p->Prev->Next = Np;
-    p->Prev = Np;
+    Ptr prev = GetNode(L, Index-1);
+    P->Next = prev->Next; 
+    prev->Next = P;
     L->Length++;
     return true;
 }
@@ -258,17 +240,17 @@ bool DeleteHead(PtrL L){
     if(IsEmpty(L)){
         return false;
     }
-    Ptr head = L->Head;
     if(L->Length == 1){
+        free(L->Head);
         L->Head = NULL;
         L->Tail = NULL;
     }
     else{
-        L->Head = head->Next;    // Update head to next node
+        Ptr head = L->Head;
+        L->Head = L->Head->Next;
         L->Tail->Next = L->Head; // Update tail's next to new head
-        L->Head->Prev = L->Tail; // Update new head's prev to tail
+        free(head);
     }
-    free(head);
     L->Length--;
     return true;
 }
@@ -276,26 +258,21 @@ bool DeleteTail(PtrL L){
     if(IsEmpty(L)){
         return false;
     }
-    Ptr tail = L->Tail;
-    L->Tail = tail->Prev;     // Update tail to previous node
-    L->Tail->Next = L->Head;  // Update new tail's next to head
-    L->Head->Prev = L->Tail;  // Update head's prev to new tail
-    free(tail);
+    Ptr prev = GetNode(L, L->Length - 2);
+    free(L->Tail);
+    L->Tail = prev;
+    L->Tail->Next = L->Head;
     L->Length--;
     return true;
 }
 bool DeleteAt(PtrL L, int Index){
-    if (IsEmpty(L) || Index<1 || Index>L->Length-2) {
-        // Index must be in the range of 1 to Length-2 for middle deletion
+    if (IsEmpty(L) || Index<0 || Index>=L->Length) {
         return false;
     }
-    Ptr p = GetNode(L, Index);
-    p->Prev->Next = p->Next;
-    p->Next->Prev = p->Prev;
-    free(p);
+    Ptr prev = GetNode(L, Index - 1);
+    Ptr del = prev->Next;
+    prev->Next = del->Next;
+    free(del);
     L->Length--;
     return true;
 }
-
-
-
