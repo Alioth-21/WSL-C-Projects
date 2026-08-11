@@ -27,7 +27,7 @@ typedef struct{
 
 /// @declarations
 PtrD InitDeque();
-bool GetSpace(PtrD D, int size);
+bool Resize(PtrD D, int size);
 bool EnQueueFront(PtrD D, DataType data);
 bool EnQueueRear(PtrD D, DataType data);
 bool DeQueueFront(PtrD D, DataType* data);
@@ -120,14 +120,14 @@ PtrD InitDeque(){
     D->Rear = 0;
     D->Length = 0;
     D->Capacity = SIZE;
-    if(! GetSpace(D, D->Capacity) ){
+    if(! Resize(D, D->Capacity) ){
         printf("Memory allocation failed!\n");
         free(D);
         return NULL;
     }
     return D;
 }
-bool GetSpace(PtrD D, int size){
+bool Resize(PtrD D, int size){
     Ptr p = (Ptr)malloc(size * sizeof(DataType));
     if(p == NULL){
         return false;
@@ -152,7 +152,7 @@ bool EnQueueFront(PtrD D, DataType data){
         return false;
     }
     if(IsCapacityFull(D) ){
-        if(GetSpace(D, D->Capacity + SIZE)) {
+        if(Resize(D, D->Capacity + SIZE)) {
             printf("Get More Space\n");
         }
         else{
@@ -171,7 +171,7 @@ bool EnQueueRear(PtrD D, DataType data){
         return false;
     }
     if(IsCapacityFull(D) ){
-        if(GetSpace(D, D->Capacity + SIZE)) {
+        if(Resize(D, D->Capacity + SIZE)) {
             printf("Get More Space\n");
         }
         else{

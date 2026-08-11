@@ -27,13 +27,14 @@ typedef struct{
     int Capacity;
 }Queue, *PtrQ;
 
-bool GetSpcae(PtrQ Q, int size);
+bool Resize(PtrQ Q, int size);
 PtrQ InitQueue();
 void PrintQueue(PtrQ Q);
 bool EnQueue(PtrQ Q, DataType data);
 bool DeQueue(PtrQ Q, DataType* data);
 bool IsEmpty(PtrQ Q);
 bool IsFull(PtrQ Q);
+bool IsCapacityFull(PtrQ Q);
 int GetFront(PtrQ Q);
 int GetRear(PtrQ Q);
 int GetLength(PtrQ Q);
@@ -85,7 +86,7 @@ int main(){
 
     return 0;
 }
-bool GetSpcae(PtrQ Q, int size){
+bool Resize(PtrQ Q, int size){
     Ptr p = (Ptr)malloc(sizeof(DataType)*size);
     if (p==NULL) return false;
     int pos = Q->Front;
@@ -108,7 +109,7 @@ PtrQ InitQueue(){
     p->Data = NULL;
     p->Length = 0;
     p->Capacity = SIZE;
-    if(!GetSpcae(p, p->Capacity)){
+    if(!Resize(p, p->Capacity)){
         printf("Malloc Failed\n");
         free(p);
         return NULL;
@@ -126,8 +127,14 @@ bool EnQueue(PtrQ Q, DataType data){
         printf("Queue is full!\n");
         return false;
     }
-    else if(Q->Length==Q->Capacity && Q->Capacity<MAXSIZE && GetSpcae(Q, Q->Capacity+SIZE)){
-        printf("Get More Space\n");
+    if(IsCapacityFull(Q)){
+        if(Resize(Q, Q->Capacity+SIZE)){
+            printf("Malloc Completed\n");
+        }
+        else{
+            printf("Malloc Failed\n");
+            return false;
+        }
     }
     Q->Data[Q->Rear] = data;
     Q->Rear = (Q->Rear + 1) % Q->Capacity;
@@ -149,6 +156,9 @@ bool IsEmpty(PtrQ Q){
 }
 bool IsFull(PtrQ Q){
     return Q->Length==MAXSIZE-1;     //
+}
+bool IsCapacityFull(PtrQ Q){
+    return Q->Length==Q->Capacity && Q->Capacity<MAXSIZE;
 }
 int GetFront(PtrQ Q){
     return Q->Front;
