@@ -21,7 +21,6 @@ int GetLength(PtrS S);
 void PrintStr(PtrS S);
 void InputStr(PtrS S);
 void ClearStr(PtrS S);
-void DestroyStr(PtrS S);
 
 bool Resize(PtrS S, int size);                  //realloc memory for string S
 bool StrAssign(Ptr dest, Ptr str, int len);     //str assign to S
@@ -167,12 +166,6 @@ bool Concat(PtrS S, PtrS S1, PtrS S2){
     return true;
 }
 void ClearStr(PtrS S){
-    for(int i = 0; i < S->Length; i++){
-        S->Data[i] = '\0';
-    }
-    S->Length = 0;
-}
-void DestroyStr(PtrS S){
     if(S==NULL) return;
     if(S->Data != NULL) free(S->Data);
     free(S);
