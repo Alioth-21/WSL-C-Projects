@@ -83,8 +83,8 @@ void PrintNext(int* next, int len){
 }
 
 int main(){
-    char S[] = "ababcabcacbab";
-    char P[] = "abcac";
+    char S[] = "aaabaaaab"; //"ababcabcacbab";
+    char P[] = "aaaab";     //"abcac";
     
     int next[5];
     SetNext(P, next, 5);

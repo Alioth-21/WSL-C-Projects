@@ -1,5 +1,5 @@
-// 1-6-4 PM-BF.c
-// Phis is the BF pattern matching algorithm
+// 1-6-4 BF.c
+// BF(brute force) pattern matching algorithm
 
 #include <stdio.h>
 #include <string.h>
