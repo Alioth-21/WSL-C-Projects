@@ -50,183 +50,282 @@
     };
     ```
 
-# 2. 操作功能 Operations
+## 1.3 循环链表 Circular Linked List
 
-## 2.1 高层函数（编排调度）High-level functions
+### 1.3.1 循环单链表 Circular Single Linked List
 
-### 2.1.1 初始化链表 InitList
+1. 节点Node
+    ```c
+    typedef struct Node *Ptr;
 
-1. 给链表分配内存空间 Allocate memory for the linked list
-2. 初始化数据成员 Initialize the data members
-3. 返回链表指针 Return the pointer to the linked list
-
-```c
-PtrL InitList(){
-    PtrL P = (PtrL)malloc(sizeof(struct LinkList));
-    P->Length = 0;
-    P->Head = P->Tail = NULL;
-    return P;
-}
-```
-
-### 2-1-2 插入节点
-
-1. 判断链表是否已满 IsFull
-
-2. 输入插入节点的数据和位置 Data and Index of the inserted node  
-
-3. index是否合法，
-    - 插入位置: [0, Length]
-    
-    ```C
-    bool CheckIndex(PtrL L, int index){
-        return (index >= 0 && index <=> L->Length);
-    }
+    struct LNode{
+        ElemType Data;
+        Ptr Next;
+    };
     ```
-
-    - 空表插入第一个节点
-
-4. 创建新节点 Create a new node
-    - 动态分配新节点内存空间
-    - 初始化新节点数据成员
-    - 返回新节点指针 Return the pointer to the new node
+2. 链表List
 
     ```c
-    Ptr CreateNode(ElemType data){
-        Ptr P = (Ptr)malloc(sizeof(struct LNode));
-        P->Data = data;
-        P->Next = NULL;
-        return P;
+    typedef struct LinkList *PtrL;
+
+    struct LinkList{
+        Ptr Head, Tail;
+        int Length;
+    };
+    ```
+
+### 1.3.2 循环双链表 Circular Double Linked List
+
+1. 节点Node
+    ```c
+    typedef struct Node *Ptr;
+
+    struct Node{
+        ElemType Data;
+        Ptr Prior, Next;
+    };
+    ```
+2. 链表List
+
+    ```c
+    typedef struct{
+        Ptr Head, Tail;
+        int Length;
+    }LinkList;
+    ```
+
+---
+
+## 1.4 静态链表 Static Linked List
+
+### 1.4.1 静态链表：结构数组AoS（Array of Structures）
+
+1. 节点Node
+
+    ```c
+    typedef struct Node{
+        ElemType Data;
+        int Next;
+    }Node;
+    ```
+2. 链表List
+
+    ```c
+    typedef struct LinkList{
+        Node Nodes[MAXSIZE];
+        int Head, Tail;
+        int Length;
+    }LinkList;
+    ```
+
+### 1.4.2 静态链表：数组结构体SoA（Structure of Arrays）
+> 双数组实现，数据和指针分离为两个数组
+
+1. 定义
+
+    ```c
+    typedef struct LinkList{
+        ElemType Data[MAXSIZE];
+        int Next[MAXSIZE];
+        int Head, Tail;
+        int Length;
+    }LinkList;
+    ```
+
+---
+
+# 2. 操作功能 Operations
+
+> C - Create  (增)  → 插入、添加、创建
+> R - Read    (查)  → 查找、访问、遍历  
+> U - Update  (改)  → 修改、更新、替换
+> D - Delete  (删)  → 删除、移除、销毁
+
+
+## 2.1 关键功能
+
+
+### 2.1.1 插入节点 Insert node
+
+1. 分析
+    - 插入位置index的范围：[0, Length]，index==Length表示尾插
+
+    - 插入的三种情况
+        1. 插入位置index==0，头插
+        2. 插入位置index==Length，尾插
+        3. 插入位置0<index<Length，中间插入
+
+    - 插入的特殊情况：
+        - 插入第一个节点：表为空，index==0，头插
+        - 有尾指针的链表，尾插时不需要遍历到尾节点，直接使用尾指针即可
+    
+2. 设计
+    - 高层函数：`bool InsertNode(PtrL List)`
+        - 判断表是否已满
+        - 输入插入位置index和数据data
+        - 判断index是否合法
+        - 调用低层函数执行插入操作
+    - 低层函数：
+        - 头插：`bool InsertHead(PtrL List, ElemType data)`
+        - 尾插：`bool InsertTail(PtrL List, ElemType data)`
+        - 中间插入：`bool InsertMiddle(PtrL List, int index, ElemType data)`
+3. 实现
+
+    ```c
+    bool InsertNode(PtrL List){
+        if(IsFull(List)){
+            printf("List is full, cannot insert node.\n");
+            return false;
+        }
+        int index;
+        ElemType data;
+        printf("Enter the index to insert (0 to %d): ", List->Length);
+        scanf("%d", &index);
+        if(!CheckIndex(List, index)){
+            printf("Invalid index, cannot insert node.\n");
+            return false;
+        }
+        printf("Enter the data to insert: ");
+        scanf("%d", &data);
+        if(index == 0){
+            return InsertHead(List, data);
+        } else if(index == List->Length){
+            return InsertTail(List, data);
+        } else {
+            return InsertMiddle(List, index, data);
+        }
     }
-    ``` 
-    
-4. 插入节点 Insert the node
-    - 空表插入
-    - 头部插入
-    - 尾部插入
-    - 中间插入
+    bool InsertHead(PtrL List, ElemType data){
+        Ptr newNode = CreateNode(data);
+        if(!newNode) return false;
+        newNode->Next = List->Head;
+        List->Head = newNode;
+        if(List->Length == 0){
+            List->Tail = newNode;
+        }
+        List->Length++;
+        return true;
+    }
+    bool InsertTail(PtrL List, ElemType data){
+        Ptr newNode = CreateNode(data);
+        if(!newNode) return false;
+        newNode->Next = NULL;
+        List->Tail->Next = newNode;
+        List->Tail = newNode;
+        List->Length++;
+        return true;
+    }
 
-### 2-1-3 删除节点
-
-1. 判断链表是否为空 IsEmpty
-
-2. 输入删除节点的位置 delete node index
-
-3. 位置是否合法
-    - 删除位置: [0, Length-1]
-    
-    ```C
-    bool CheckIndex(PtrL L, int index){
-        return (index >= 0 && index < L->Length);
+    bool InsertAt(PtrL List, int index, ElemType data){
+        //...
     }
     ```
 
-4. 删除节点 Delete the node
-    - 删除最后一个节点
-    - 头部删除
-    - 尾部删除
-    - 中间删除
+### 2.1.2 删除节点 Delete node
 
-### 2-1-4 查找节点 Find node
 
-1. 数据查找 FindByData
-    - 返回index
-2. 位置查找 FindByIndex
-    - 检查 index是否合法 CheckIndex
-### 2.1.5 更新节点 Update node
+1. 分析
+    - 删除位置`index`的范围：[0, Length-1]
+        - `index`==`Length`-1 表示删除尾节点
+        - `index`==`Length` 删除位置不合法，报错
 
-1. 查找节点 Find node by index
-2. 更新节点数据 Update node data
-### 2.1.6 遍历表 Traverse the list
+    - 删除的三种情况
+        1. 删除位置：`index`==0，头删
+        2. 删除位置：`index`==`Length`-1，尾删
+        3. 删除位置：0<`index`<`Length`-1，中间删除
 
-### 2.1.7 清空节点和销毁链表 
+    - 删除的特殊情况:
+        - 删除唯一节点, 既是头节点又是尾节点，删除位置`index`==0，头删
+        - 非头节点的删除，需要遍历到前一个节点维持链表逻辑
+2. 设计
+    - 高层函数：`bool DeleteNode(PtrL List)`
+        - 判断表是否为空
+        - 输入删除位置`index`
+        - 判断`index`是否合法
+        - 调用低层函数执行删除操作
+    - 低层函数：
+        - 头删：`bool DeleteHead(PtrL List)`
+        - 尾删：`bool DeleteTail(PtrL List)`
+        - 中间删除：`bool DeleteAt(PtrL List, int index)`
 
-1. 清空链表 ClearList
-    - 遍历删除全部节点
-    - Length = 0
+3. 实现
 
-2. 销毁链表 DestoryList
-    - ClearList
-    - Free(List)
+    ```c
+    bool DeleteNode(PtrL List){
+        if(IsEmpty(List)){
+            printf("List is empty, cannot delete node.\n");
+            return false;
+        }
+        int index;
+        printf("Enter the index to delete (0 to %d): ", List->Length - 1);
+        scanf("%d", &index);
+        if(!CheckIndex(List, index)){
+            printf("Invalid index, cannot delete node.\n");
+            return false;
+        }
+        if(index == 0){
+            return DeleteHead(List);
+        } 
+        else if(index == List->Length - 1){
+            return DeleteTail(List);
+        } 
+        else {
+            return DeleteAt(List, index);
+        }
+    }
+    // 低层函数实现
+    //
+    //
+    ```
+---
 
-## 2-2 底层函数（具体执行）Low-level functions
+## 2.2 其他主要功能
 
-### 2-2-1 判断 Judge
+### 2.2.1 初始化
+
+1. 初始化链表 InitList
+2. 初始化节点 InitNode
+
+### 2.2.2 判断
 
 1. 判断链表是否为空 IsEmpty
 2. 判断链表是否已满 IsFull
 3. 判断index是否合法 CheckIndex
-4. 判断插入index是否合法 CheckInsertIndex
 
-### 2-2-2 读取 Get
+### 2.2.3 遍历和查找
+
+1. 遍历链表 TraverseList
+2. 输出链表 PrintList
+3. 按位查找 FindByIndex
+4. 按值查找 FindByData
+
+### 2.2.4 获取和设置节点数据
+> Get返回能修改的指针，Set直接修改数据成员
 1. 获取链表长度 GetLength
 2. 获取节点 GetNode
-3. 获取节点前驱 GetPrevNode/GetPriorNode
 3. 获取节点数据 GetElem
+4. 获取节点前驱 GetPrevNode/GetPriorNode
+5. 设置节点数据 SetData
 
-### 2-2-3 节点创建修改 Create&Set
+### 2.2.5 删除和销毁链表
 
-1. 创建新节点 CreateNode
-2. 设置节点数据 SetData
+1. 删除节点 DeleteNode
+2. 清空链表 ClearList
+3. 销毁链表 DestoryList
 
-### 2.2.4 查找
-1. 数据查找 FindByData
-2. 位置查找 FindByIndex 
+## 2.3 功能划分：高层+底层
 
-### 2.2.5 插入
-1. 表头插入 InsertHead
-2. 表尾插入 InsertTail
-3. 中间插入 InsertAtIndex
+### 2.3.1 高层函数（编排调度）High-level functions
+> 总体功能划分
 
-### 2-2-4 删除
-1. 表头删除 DeleteHead
-2. 表尾删除 DeleteTail
-3. 中间删除 DeleteAtIndex
+## 2-2 底层函数（具体执行）Low-level functions
+
+> 具体基本功能实现
 
 
+# 3. Main 函数
 
-# 3. 交互
 
-> Main 函数使用 `while(chioce)` + `scanf` + `switch` 的 CLI 菜单循环。
-
-```C
-int main(){
-    PtrL L = InitList();
-    int chioce;
-    while(chioce){
-        printf("1. InsertNode\n");
-        printf("2. DeleteNode\n");
-        printf("3. FindNode\n");
-        printf("4. UpdateNode\n");
-        printf("5. ClearList\n");
-        printf("0. Exit\n");
-        scanf("%d", &chioce);
-        switch(chioce){
-            case 1:
-                // InsertNode
-                break;
-            case 2:
-                // DeleteNode
-                break;
-            case 3:
-                // FindNode
-                break;
-            case 4:
-                // UpdateNode
-                break;
-            case 5:
-                // ClearList
-                break;
-            case 0:
-                // DestoryList & Exit
-                break;
-            default:
-                printf("Invalid choice!\n");
-        }
-    }
-    return 0;
-}
-```
 
 # 4. 宏定义 
 
@@ -236,29 +335,7 @@ int main(){
 
 # 5. Notes
 
-## 5.1 Inset和Delete的高低层函数划分
-
-1. List作为参数判断
-    - List为空指针：初始化函数中解决，后续不需要判断
-
-2. 插入删除
-    - 表的空和满
-    - index是否合法
-    - 插入时表是否为空表
-    - 删除时表是否只有一个节点
-
-3. 函数分层
-    - 原本计划：
-        - 高层函数负责所有判断
-        - 低层函数负责执行，为void
-        但是为了程序的健壮性，两层都需要对表的空满、index范围、插入第一个节点、删除最后一个节点，进行判断
-
-    - 现在情况：
-        - 高层函数判断：表的空满、index范围（false输出信息）
-        - 低层函数判断：表的空满、index范围、插入第一个节点和删除最后一个节点的特殊处理分支
-        - 低层函数中对表的空满、index范围、插入第一个节点、删除最后一个节点，进行判断，并打印错误信息 
-
-## 5.2 循环链表的特殊情况
+## 5.1 循环链表的特殊情况
 
 1. 循环导致头插和尾插结构上等价，逻辑上不等价
 
